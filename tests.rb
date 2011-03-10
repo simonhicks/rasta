@@ -211,6 +211,10 @@ nil
 # FIXME add more of these...
 # reader macros 
 expect Label.new("foo"), "'foo"
+expect Node.new(Label.new("puts"), 'hello', ' ', 'world'), '
+% let [a "hello" b "world"]
+  `% puts ~a " " ~b
+'
 
 # executing ruby strings
 expect "it worked", '% ruby "%w(it worked).join(\" \")"'

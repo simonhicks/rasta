@@ -1,4 +1,7 @@
-# create a mechanism for loading .rb and .rst files, and load standard library in rasta on boot
+# Syntax quote/unquote is working but untested
+#
+#
+#     
 #     
 ## unifying the reader
 # move reader macro list from token-stack to the reader 
@@ -18,6 +21,8 @@
 # make it impossible to add reader macros for two reasons:
 #   the usefulness is limited since they can only be a single character long at the moment and almost all of the characters are in use
 #   same arguments as with clojure... it'd make the code almost unreadable to a new person
+
+# load standard library in rasta on boot
 
 ## Using rasta from ruby
 # find a way to load stuff written in rasta into ruby
