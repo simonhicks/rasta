@@ -24,6 +24,8 @@
 
 #(in ,,, (body)) can just create a new environment that simply rebinds self!
 
+# use @ for namespacing?
+
 - can have objects in @head to __apply as message chains (like ioke)
 
 - use modules to mix in __apply behaviours (eg. Chainable...) 
@@ -34,8 +36,6 @@ FIND A WAY TO IMPLEMENT SCOPED MONKEY PATCHING... That way you can redefine a ty
 CAN REDEFINE AN OBJECT'S EVAL & APPLY METHODS FROM WITHIN THE LANGUAGE!!!!!!!!!!!!!!!!
 
 - char literals
-
-- apply method
 
 - array/hash access
 

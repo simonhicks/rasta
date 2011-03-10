@@ -1,4 +1,4 @@
-%w(regexp string symbol array hash label nil_class object node env lambda token_stack lexer interpreter).each do |f|
+%w(regexp string symbol array hash label nil_class object node env lambda reader token_stack lexer interpreter).each do |f|
   require File.join(File.expand_path(File.dirname(__FILE__)), f)
 end
 

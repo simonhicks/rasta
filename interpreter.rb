@@ -53,13 +53,20 @@ class Interpreter
   def initialize defaults=DEFAULTS, forms=FORMS
     @env = Env.new(nil, defaults)
     @forms = Env.new(nil, forms)
+    @rdr = Reader.new ""
   end
 
   def eval(string)
-    Lexer.tokenize(string).map do |exp|
+    @rdr << string
+    @rdr.tokenize.map do |exp|
       exp.lispeval(@env, @forms)
     end.last
   end
+  #def eval(string)
+    #Lexer.tokenize(string).map do |exp|
+      #exp.lispeval(@env, @forms)
+    #end.last
+  #end
 
   def repl
     print "> "
