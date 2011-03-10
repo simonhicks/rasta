@@ -47,7 +47,7 @@ class Reader
       [:OTHER, "{"] => ["}", Hash]
     }
 
-    attr_reader :closer, :nested, :macros
+    attr_accessor :closer, :nested, :macros, :next_stack_class
 
 
     def initialize type = nil
@@ -58,7 +58,7 @@ class Reader
       @closer, @type = TYPES[type]
       @macros = {
         [:OTHER, "'"] => proc {|| @waiting_macro = proc{|expr| Node.new(Label.new("quote"), expr)}},
-        [:OTHER, "`"] => proc{|| @next_stack_class = SyntaxQuotedTokenStack}
+        [:OTHER, "`"] => proc{|| puts "in ` macro";self.next_stack_class = SyntaxQuotedTokenStack}
       }
     end
 
@@ -106,6 +106,7 @@ class Reader
     # add a token to the expression stack, applying the waiting reader macro if there is one
     def add_to_exprs token
       if @waiting_macro
+        puts "calling waiting macro"
         @exprs << @waiting_macro.call(token)
         @waiting_macro = nil
       else
@@ -117,6 +118,8 @@ class Reader
       if @nested 
         handle_nested_token token
       elsif is_reader_macro? token
+        puts "calling original macro for #{token}"
+        puts @next_stack_class
         @macros[token].call
       elsif opens_nesting?(token)
         nest_token token
@@ -135,7 +138,7 @@ class Reader
       [:OTHER, "{"] => ["}", Hash]
     }
 
-    attr_reader :closer, :nested, :macros
+    attr_reader :closer, :nested, :macros, :next_stack_class
 
     def initialize type = nil
       @exprs = []
@@ -165,7 +168,7 @@ class Reader
 
     def reset_nested
       @nested = nil
-      @next_stack_class = TokenStack
+      @next_stack_class = SyntaxQuotedTokenStack
     end
 
     def handle_nested_token token
@@ -186,13 +189,13 @@ class Reader
     end
     
     def is_reader_macro? token
-      puts token if @macros.has_key? token
       @macros.has_key? token
     end
 
     # add a token to the expression stack, applying the waiting reader macro if there is one
     def add_to_exprs token
       if @waiting_macro
+        puts "calling waiting macro"
         @exprs << @waiting_macro.call(token)
         @waiting_macro = nil
       elsif [Node, Array, Hash].include?(token.class)
@@ -206,6 +209,7 @@ class Reader
       if @nested 
         handle_nested_token token
       elsif is_reader_macro? token
+        puts "calling original macro for #{token}"
         @macros[token].call
       elsif opens_nesting?(token)
         nest_token token
