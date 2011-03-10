@@ -1,0 +1,87 @@
+## Tests
+# write basic tests for the currently supported functionality
+
+## unifying the reader
+# move Lexer/tokenstack into a single Reader class
+# add a reader-macro stage that allows a token to modify the next form
+#   in TokenStack stage
+#   hash for reader-macro tokens => procs
+#   when a matching token is encountered, the next full form is passed to the proc before being added to @exprs
+#   syntax-macro special form for adding syntax macros to the Reader
+#     w reader-macro for a list of words
+#     ' quote reader macro
+#     
+# create a mechanism for loading .rb and .rst files, and load standard library in rasta on boot
+
+## Using rasta from ruby
+# find a way to load stuff written in rasta into ruby
+# this requires a method that imports ruby and rasta equivalently
+
+## SOLVING SYMBOL CAPTURE
+# make it imposible to use define outside the top scope
+# check for un-resolvable Labels before adding a form to defs
+# add a namespace property to Labels and qualify them when expanding macros
+
+#(in ,,, (body)) can just create a new environment that simply rebinds self!
+
+- can have objects in @head to __apply as message chains (like ioke)
+
+- use modules to mix in __apply behaviours (eg. Chainable...) 
+
+FIND A WAY TO IMPLEMENT SCOPED MONKEY PATCHING... That way you can redefine a type's call method, without having to lose the method sending aspect throughout your code base
+
+
+CAN REDEFINE AN OBJECT'S EVAL & APPLY METHODS FROM WITHIN THE LANGUAGE!!!!!!!!!!!!!!!!
+
+- char literals
+
+- apply method
+
+- array/hash access
+
+- add splats
+
+- class special form
+
+- improve error reporting... things should never go wrong silently.
+  - when the input is syntactically invalid (eg. unmatching []{}() chars)
+
+- embed repl in vim
+  - syntax highlighting (ugh)
+  - auto-indent (uuugggghh)
+  - when cursor is on a given %, execute cmd sends only that node
+
+let and loop/recur for local vars
+(.. obj (method args) (method args))
+
+add better support for sets?
+  Set#lispeval should return a proc that acts as a predicate
+
+documentation within the language?
+
+to define a method on an object
+(in obj ; instance-eval
+  (defn method [a b]...
+on a class
+(in Array
+  (defn ...
+
+; where defn is defined as
+defn = proc do |obj, method, fn|
+  obj.define_method(method, fn)
+end
+
+need to add Object#define_method for that, but that's easy enough
+
+when we want to execute a closure (ie. a special form/macro) in a specific context, we can pass receiver as the first arg to the proc, then the "in" special form does this...
+
+in = proc do |obj, my_proc|
+  obj.instance_eval{ my_proc.call(self)} can here, self refers to obj, since it's in an instance_eval
+end
+
+then when eval-ing normally (ie. in the root context) we pass the env in as self... that way, we always have full, explicit control over what self refers to in macros and special forms
+
+macro hygeine?
+  forced gensyms for locals (how?)
+  substitute in special forms and macros (ie. things implemented as procs)
+
