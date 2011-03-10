@@ -49,18 +49,22 @@ class Reader
 
     attr_reader :closer, :nested, :macros
 
+
     def initialize type = nil
       @exprs = []
-      @nested = @reader_macro = nil
+      @nested = nil
+      @waiting_macro = nil
+      @next_stack_class = TokenStack
       @closer, @type = TYPES[type]
       @macros = {
-        [:OTHER, "'"] => proc{|expr| Node.new(Label.new("quote"), expr)}
+        [:OTHER, "'"] => proc {|| @waiting_macro = proc{|expr| Node.new(Label.new("quote"), expr)}},
+        [:OTHER, "`"] => proc{|| @next_stack_class = SyntaxQuotedTokenStack}
       }
     end
 
     # if we've parsed a reader macro or we're in a nested form (like an array or a hash), then we're still expecting something else
     def expecting_more?
-      !!(@reader_macro or @nested)
+      !!(@waiting_macro or @nested)
     end
 
     def to_token
@@ -73,10 +77,15 @@ class Reader
       end
     end
 
+    def reset_nested
+      @nested = nil
+      @next_stack_class = TokenStack
+    end
+
     def handle_nested_token token
       if (token.is_a?(Array) && token[1] == @nested.closer) and !@nested.nested
         add_to_exprs @nested.to_token
-        @nested = nil
+        reset_nested
       else
         @nested << token
       end
@@ -87,7 +96,7 @@ class Reader
     end
 
     def nest_token token
-      @nested = TokenStack.new(token)
+      @nested = @next_stack_class.new(token)
     end
 
     def is_reader_macro? token
@@ -96,9 +105,9 @@ class Reader
 
     # add a token to the expression stack, applying the waiting reader macro if there is one
     def add_to_exprs token
-      if @reader_macro
-        @exprs << @reader_macro.call(token)
-        @reader_macro = nil
+      if @waiting_macro
+        @exprs << @waiting_macro.call(token)
+        @waiting_macro = nil
       else
         @exprs << token
       end
@@ -108,7 +117,96 @@ class Reader
       if @nested 
         handle_nested_token token
       elsif is_reader_macro? token
-        @reader_macro = @macros[token]
+        @macros[token].call
+      elsif opens_nesting?(token)
+        nest_token token
+      else
+        add_to_exprs token
+      end
+      self
+    end
+  end
+
+  class SyntaxQuotedTokenStack
+    TYPES = {
+      [:OTHER, "%"] => [:DEDENT, Node],
+      [:OTHER, "("] => [")", Node],
+      [:OTHER, "["] => ["]", Array],
+      [:OTHER, "{"] => ["}", Hash]
+    }
+
+    attr_reader :closer, :nested, :macros
+
+    def initialize type = nil
+      @exprs = []
+      @nested = @waiting_macro = nil
+      @closer, @type = TYPES[type]
+      @next_stack_class = SyntaxQuotedTokenStack
+      @macros = {
+        [:OTHER, "'"] => proc{|| @waiting_macro = proc{|expr| Node.new(Label.new("quote"), expr)}},
+        [:OTHER, "~"] => proc{|| @waiting_macro = proc{|expr| expr}}
+      }
+    end
+
+    # if we've parsed a reader macro or we're in a nested form (like an array or a hash), then we're still expecting something else
+    def expecting_more?
+      !!(@waiting_macro or @nested)
+    end
+
+    def to_token
+      if @type == Hash
+        Hash[*@exprs]
+      elsif @type == Node
+        Node.new(:new, Label.new("Node"), *@exprs)
+      else
+        @exprs
+      end
+    end
+
+    def reset_nested
+      @nested = nil
+      @next_stack_class = TokenStack
+    end
+
+    def handle_nested_token token
+      if (token.is_a?(Array) && token[1] == @nested.closer) and !@nested.nested
+        add_to_exprs @nested.to_token
+        reset_nested
+      else
+        @nested << token
+      end
+    end
+
+    def opens_nesting? token
+      TYPES.keys.include?(token)
+    end
+
+    def nest_token token
+      @nested = @next_stack_class.new(token)
+    end
+    
+    def is_reader_macro? token
+      puts token if @macros.has_key? token
+      @macros.has_key? token
+    end
+
+    # add a token to the expression stack, applying the waiting reader macro if there is one
+    def add_to_exprs token
+      if @waiting_macro
+        @exprs << @waiting_macro.call(token)
+        @waiting_macro = nil
+      elsif [Node, Array, Hash].include?(token.class)
+        @exprs << token # if it's one of these, then it's already come from a SyntaxQuotedTokenStack, so quoting is already taken care of
+      else
+        @exprs << Node.new(Label.new("quote"), token)
+      end
+    end
+
+    def << token
+      if @nested 
+        handle_nested_token token
+      elsif is_reader_macro? token
+        @macros[token].call
       elsif opens_nesting?(token)
         nest_token token
       else
@@ -164,7 +262,6 @@ class Reader
         @pos += string.size + 2
 
       elsif comment = chunk[/\A(;.*)/, 1]
-        @tokens << string
         @pos += comment.size
 
       elsif node = chunk[/\A\%/,0]

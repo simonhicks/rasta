@@ -202,6 +202,12 @@ expect "This worked too!", '
 another-require-test
 '
 
+# comments
+expect nil, '
+nil
+; this should be discarded
+'
+
 # FIXME add more of these...
 # reader macros 
 expect Label.new("foo"), "'foo"
