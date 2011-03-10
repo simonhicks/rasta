@@ -208,7 +208,7 @@ nil
 ; this should be discarded
 '
 
-# FIXME add more of these...
+# FIXME add unquote splicing
 # reader macros 
 expect Label.new("foo"), "'foo"
 expect Node.new(Label.new("puts"), 'hello', ' ', 'world'), '

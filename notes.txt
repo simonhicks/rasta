@@ -33,7 +33,7 @@
 # check for un-resolvable Labels before adding a form to defs
 # add a namespace property to Labels and qualify them when expanding macros
 
-# use @ for namespacing?
+# use @ for namespacing ?
 
 - can have objects in @head to __apply as message chains (like ioke)
 
@@ -41,12 +41,7 @@
 
 FIND A WAY TO IMPLEMENT SCOPED MONKEY PATCHING... That way you can redefine a type's call method, without having to lose the method sending aspect throughout your code base
 
-
-CAN REDEFINE AN OBJECT'S EVAL & APPLY METHODS FROM WITHIN THE LANGUAGE!!!!!!!!!!!!!!!!
-
 - char literals
-
-- array/hash access
 
 - add splats
 
@@ -57,17 +52,19 @@ CAN REDEFINE AN OBJECT'S EVAL & APPLY METHODS FROM WITHIN THE LANGUAGE!!!!!!!!!!
   - show short stack trace
 
 - embed repl in vim
-  - syntax highlighting (ugh)
-  - auto-indent (uuugggghh)
+  - syntax highlighting
+  - auto-indent
   - when cursor is on a given %, execute cmd sends only that node
 
 let and loop/recur for local vars
 (.. obj (method args) (method args))
 
 add better support for sets?
+  Set literal #{a s d f}
   Set#lispeval should return a proc that acts as a predicate
 
 documentation within the language?
+  meta-data?
 
 to define a method on an object
 (in obj ; instance-eval
@@ -81,7 +78,7 @@ defn = proc do |obj, method, fn|
   obj.define_method(method, fn)
 end
 
-need to add Object#define_method for that, but that's easy enough
+need to add Object#define_method
 
 when we want to execute a closure (ie. a special form/macro) in a specific context, we can pass receiver as the first arg to the proc, then the "in" special form does this...
 
@@ -92,6 +89,8 @@ end
 then when eval-ing normally (ie. in the root context) we pass the env in as self... that way, we always have full, explicit control over what self refers to in macros and special forms
 
 macro hygeine?
+  namespacing for everything stored in env?
+    what about class names, constants and methods
   forced gensyms for locals (how?)
   substitute in special forms and macros (ie. things implemented as procs)
 
