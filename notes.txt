@@ -2,7 +2,6 @@
 # write basic tests for the currently supported functionality
 
 ## unifying the reader
-# move Lexer/tokenstack into a single Reader class
 # add a reader-macro stage that allows a token to modify the next form
 #   in TokenStack stage
 #   hash for reader-macro tokens => procs
