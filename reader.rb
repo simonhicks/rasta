@@ -118,6 +118,10 @@ class Reader
     end
   end
 
+  def prepend code
+    @code = code + "\n" + @code
+  end
+
   def read
     finished = false
     # Collection of parsed tokens
