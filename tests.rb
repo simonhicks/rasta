@@ -6,15 +6,10 @@ require File.join(File.expand_path(File.dirname(__FILE__)), "rasta").gsub(/.rb\Z
 
 def expect expected, string
   @tests << proc do
-    begin
-      actual = Interpreter.new.eval(string)
-      unless actual == expected
-        @fails += 1
-        @errors << "\n\nFAIL:\n\n#{string}\nExpected: #{expected}\nActual:   #{actual}"
-      end
-    rescue Exception => e
+    actual = Interpreter.new.eval(string)
+    unless actual == expected
       @fails += 1
-      @errors << "\n\nFAIL:\n\n#{string}\nExpected:      #{expected}\nError Message: #{e}"
+      @errors << "\n\nFAIL:\n\n#{string}\nExpected: #{expected}\nActual:   #{actual}"
     end
   end
 end
@@ -170,7 +165,12 @@ expect nil, "nil"
 expect "12345", "% . [1 2 3 4 5] join"
 expect "12345", "% . [1 2 3 4 5] :join"
 
-# set!, if
+# require, set!, if
+expect "Yes", '
+% require "./test_require"
+
+% RastaRequireTest :did_it_work?
+'
 expect 2, "
 % def a 1
 % set! a (1 :+ a)
@@ -191,16 +191,7 @@ expect :changed, "
 a
 "
 
-# loading files
-expect "Yes", '
-% require "./test_require"
-
-% RastaRequireTest :did_it_work?
-'
-expect "This worked too!", '
-% require "test_require_again"
-another-require-test
-'
+# FIXME loading rasta files
 
 # comments
 expect nil, '

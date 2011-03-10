@@ -1,5 +1,6 @@
 root_context = self
 DEFAULTS = {
+  "require" => proc{|*args| require(*args)},
   "ruby" => proc{|str| eval(str)},
   "not" => proc{|expr| not(expr)},
   "true" => true,
@@ -47,22 +48,9 @@ FORMS = {
 
 class Interpreter
   def initialize defaults=DEFAULTS, forms=FORMS
-    @env = Env.new(nil, defaults.merge({"require"=> proc{|*args| args.map{|a| self.load_rasta(a) || require(a)}.all?{|result| result}}}))
+    @env = Env.new(nil, defaults)
     @forms = Env.new(nil, forms)
     @rdr = Reader.new ""
-  end
-
-  def load_rasta name
-    success = false
-    [$:, File.dirname(__FILE__)].flatten.each do |path|
-      file = "#{path}/#{name}.rst"
-      if File.exist? file
-        @rdr.prepend(open(file).read)
-        success = true
-        break
-      end
-    end
-    success
   end
 
   def eval(string)
@@ -84,7 +72,7 @@ class Interpreter
       end
       begin
         puts "=> #{self.eval(text).print_form}"
-      rescue Exception => e
+      rescue StandardError => e
         puts "ERROR: #{e}"
       end
       print "> "
