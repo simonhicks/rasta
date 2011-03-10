@@ -21,7 +21,7 @@ class Env
   def lookup(symbol)
     return @defs[symbol] if @defs.has_key?(symbol) 
     if @parent.nil?
-      return nil
+      return false
     end
     return @parent.lookup(symbol)
   end

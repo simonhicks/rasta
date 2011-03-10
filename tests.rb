@@ -13,6 +13,16 @@ def expect expected, string
     end
   end
 end
+def expect_error string
+  @tests << proc do
+    begin
+      actual = Interpreter.new.eval(string)
+      @fails += 1
+      @errors << "\n\nFail: \n\n#{string}\nAn error was expected, but none was thrown.\nResult: #{actual}"
+    rescue
+    end
+  end
+end
 
 # literal forms
 expect 1, "1"
@@ -103,15 +113,92 @@ expect "ABCDEF", "
   % (\"a\"..\"f\" :to_a) :map
     % do [l] (l :upcase)
 "
-# FIXME macros
-# FIXME context
-# FIXME scoping
-# FIXME true/false/nil
-# FIXME require, set!, if
-# FIXME quote/eval
-# FIXME . form
-# FIXME letmacro
-# FIXME executing ruby strings
+
+# defining macros
+expect :unchanged, "
+% defmacro my-unless 
+  [pred then else]
+  % if (not pred) 
+    then 
+    else
+
+% def macro-test :unchanged
+
+% my-unless (:== 1 1)
+  % set! macro-test :changed
+  nil
+
+macro-test
+"
+
+# accessing self
+expect self, "self"
+# changing context via the "in" macro
+expect Fixnum, "
+% in 1
+  % :class self
+"
+
+# variable scope
+expect "asdf", "
+% def a 5
+
+% let [a \"asdf\"] a
+"
+# env variables should still be available within an "in" block
+expect 5, "
+% def a 5
+
+% in (:new Object) a
+"
+
+# quote/eval
+expect Label.new("bar"), "(quote bar)"
+expect_error "foo"
+
+# true/false/nil
+expect true, "true"
+expect false, "false"
+expect nil, "nil"
+
+# . form
+expect "12345", "% . [1 2 3 4 5] join"
+expect "12345", "% . [1 2 3 4 5] :join"
+
+# require, set!, if
+expect "Yes", '
+% require "./test_require"
+
+% RastaRequireTest :did_it_work?
+'
+expect 2, "
+% def a 1
+% set! a (1 :+ a)
+a
+"
+expect :unchanged, "
+% def a :unchanged
+% if true
+  nil
+  % set! a :changed
+a
+"
+expect :changed, "
+% def a :unchanged
+% if false
+  nil
+  % set! a :changed
+a
+"
+
+# FIXME loading rasta files
+
+# FIXME add more of these...
+# reader macros 
+expect Label.new("foo"), "'foo"
+
+# executing ruby strings
+expect "it worked", '% ruby "%w(it worked).join(\" \")"'
 
 if __FILE__==$0
   @tests.each(&:call)

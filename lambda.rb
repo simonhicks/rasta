@@ -3,7 +3,7 @@ class Lambda
     @env, @forms, @params, @code = env, forms, params, code
   end
   def call(*args)
-    raise "Expected #{@params.size} arguments" unless args.size == @params.size
+    raise "Expected #{@params.size} arguments but got #{args}" unless args.size == @params.size
     newenv = Env.new(@env)
     newforms = Env.new(@forms)
     @params.zip(args).each do |sym, value|

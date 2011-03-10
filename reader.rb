@@ -18,11 +18,10 @@ class Reader
     if mods.nil?
       modifier = nil
     else
-      #mods = mods[2..-1].split("")
       mods = mods.split("")
       one,two,three = mods.map do |m|
         {"x" => Regexp::EXTENDED,
-         "@pos" => Regexp::IGNORECASE,
+         "i" => Regexp::IGNORECASE,
          "m" => Regexp::MULTILINE}[m]
       end
       modifier = if three
@@ -48,12 +47,20 @@ class Reader
       [:OTHER, "{"] => ["}", Hash]
     }
 
-    attr_reader :closer, :nested
+    attr_reader :closer, :nested, :macros
 
     def initialize type = nil
       @exprs = []
-      @nested = nil
+      @nested = @reader_macro = nil
       @closer, @type = TYPES[type]
+      @macros = {
+        [:OTHER, "'"] => proc{|expr| Node.new(Label.new("quote"), expr)}
+      }
+    end
+
+    # if we've parsed a reader macro or we're in a nested form (like an array or a hash), then we're still expecting something else
+    def expecting_more?
+      !!(@reader_macro or @nested)
     end
 
     def to_token
@@ -68,7 +75,7 @@ class Reader
 
     def handle_nested_token token
       if (token.is_a?(Array) && token[1] == @nested.closer) and !@nested.nested
-        @exprs << @nested.to_token
+        add_to_exprs @nested.to_token
         @nested = nil
       else
         @nested << token
@@ -83,27 +90,42 @@ class Reader
       @nested = TokenStack.new(token)
     end
 
+    def is_reader_macro? token
+      @macros.has_key? token
+    end
+
+    # add a token to the expression stack, applying the waiting reader macro if there is one
+    def add_to_exprs token
+      if @reader_macro
+        @exprs << @reader_macro.call(token)
+        @reader_macro = nil
+      else
+        @exprs << token
+      end
+    end
+
     def << token
       if @nested 
         handle_nested_token token
+      elsif is_reader_macro? token
+        @reader_macro = @macros[token]
       elsif opens_nesting?(token)
         nest_token token
       else
-        @exprs << token
+        add_to_exprs token
       end
       self
     end
   end
 
   def read
-    finished = nil
+    finished = false
     # Collection of parsed tokens
     @tokens = TokenStack.new
     
     # Current indent level is the number of spaces in the last indent.
     current_indent = 0
 
-    #while @pos < @code.size
     while not finished
       chunk = @code[@pos..-1]
       
@@ -192,7 +214,7 @@ class Reader
         @pos += 1
       end
 
-      if current_indent == 0 or @pos >= @code.size
+      if current_indent == 0 && !@tokens.expecting_more?  or @pos >= @code.size
         finished = true 
       end
     end
