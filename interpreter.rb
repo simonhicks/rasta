@@ -58,15 +58,12 @@ class Interpreter
 
   def eval(string)
     @rdr << string
-    @rdr.tokenize.map do |exp|
-      exp.lispeval(@env, @forms)
-    end.last
+    result = nil
+    while expr = @rdr.read
+      result = expr.lispeval(@env, @forms)
+    end
+    result 
   end
-  #def eval(string)
-    #Lexer.tokenize(string).map do |exp|
-      #exp.lispeval(@env, @forms)
-    #end.last
-  #end
 
   def repl
     print "> "
