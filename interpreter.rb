@@ -2,6 +2,7 @@ root_context = self
 DEFAULTS = {
   "require" => proc{|*args| require(*args)},
   "ruby" => proc{|str| eval(str)},
+  "not" => proc{|expr| not(expr)},
   "true" => true,
   "false" => false,
   "self" => root_context,
@@ -24,9 +25,9 @@ FORMS = {
     args, vals = binding.each_slice(2).to_a.transpose
     Lambda.new(env, forms, args, *body).call(*vals)
   },
-  "defmacro" => lambda{|env, forms, name, expr|
-    func = exp.lispeval(env,forms)
-    forms.define(name, lambda{|e2,f2,*rest| func.call(*rest).lispeval(env,forms)})
+  "defmacro" => lambda{|env, forms, name, params, *code|
+    func = Node.new(Label.new("do"), params, *code).lispeval(env,forms) # we construct a block (ie. a Lambda)
+    forms.define(name, lambda{|e2,f2,*rest| func.call(*rest).lispeval(env,forms)}) # and the macro evals the result of calling that block
     name
   },
   "eval" => lambda{|env, forms, *code|

@@ -103,10 +103,27 @@ expect "ABCDEF", "
   % (\"a\"..\"f\" :to_a) :map
     % do [l] (l :upcase)
 "
-# FIXME macros
+
+# defining macros
+expect :unchanged, "
+% defmacro my-unless 
+  [pred then else]
+  % if (not pred) 
+    then 
+    else
+
+% def macro-test :unchanged
+
+% my-unless (:== 1 1)
+  % set! macro-test :changed
+  nil
+
+macro-test
+"
+
 # FIXME context
 # FIXME scoping
-# FIXME true/false/nil
+# FIXME true/false/nil/self
 # FIXME require, set!, if
 # FIXME quote/eval
 # FIXME . form

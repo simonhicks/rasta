@@ -2,14 +2,19 @@
 # write basic tests for the currently supported functionality
 
 ## unifying the reader
-# move Lexer/tokenstack into a single Reader class
 # add a reader-macro stage that allows a token to modify the next form
-#   in TokenStack stage
-#   hash for reader-macro tokens => procs
-#   when a matching token is encountered, the next full form is passed to the proc before being added to @exprs
+#   can acheive most of this by allowing reader macros to substitute a new TokenStack class for the nested form
 #   syntax-macro special form for adding syntax macros to the Reader
-#     w reader-macro for a list of words
-#     ' quote reader macro
+#   w reader-macro for a list of words
+#     should change the behaviour of the @nested token stack to call .print (or fetches the char for [:OTHER,...] tokens) on every token recieved and then return an array
+#   syntax-quote/unquote/unquote-splice needs to be a very complex reader macro...
+#   unquote/unquote-splice
+#     both simply raise errors saying "you can't use these outside syntax-quoting"
+#   syntax-quote macro `
+#     causes the next node to be a SyntaxQuoteNode (subclass of node)
+#     ~ reader macro of the nested token_stack is then changed to proc{|expr| Node.new(Label.new("unquote"), expr)}
+#     ~~ reader macro of the nested token_stack is then changed to proc{|expr| Node.new(Label.new("unquote-splice"), expr)}
+#   SyntaxQuoteNode handles the unquote/unquote-splice form
 #     
 # create a mechanism for loading .rb and .rst files, and load standard library in rasta on boot
 
@@ -45,6 +50,7 @@ CAN REDEFINE AN OBJECT'S EVAL & APPLY METHODS FROM WITHIN THE LANGUAGE!!!!!!!!!!
 
 - improve error reporting... things should never go wrong silently.
   - when the input is syntactically invalid (eg. unmatching []{}() chars)
+  - show short stack trace
 
 - embed repl in vim
   - syntax highlighting (ugh)
