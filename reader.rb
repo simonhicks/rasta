@@ -18,7 +18,6 @@ class Reader
     if mods.nil?
       modifier = nil
     else
-      #mods = mods[2..-1].split("")
       mods = mods.split("")
       one,two,three = mods.map do |m|
         {"x" => Regexp::EXTENDED,

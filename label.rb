@@ -21,7 +21,7 @@ class Label < String
       env.lookup("self").instance_variable_get(self)
     else
       normal_lookup = env.lookup(self)  # this is so we can lookup "nil" in env and receive nil
-      if (normal_lookup == false)
+      if (normal_lookup == false and self != "false")
         return forms.lookup(self) || env.lookup("self").method(self) # if the symbol isn't found we call it as a method on the context
       else
         return normal_lookup
