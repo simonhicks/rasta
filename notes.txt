@@ -1,12 +1,54 @@
-# Sugar required:
-# 
-# helper macro for defining methods
-# helper macro for defining classes
-# helper macro for defining modules
-#
-## unifying the reader
-#
+
+important stuff that needs to be done sooner or later...
+  improve errors
+  improve handling of bad syntax/indentation etc.
+  macro hygeine
+    namespacing for everything stored in env?
+      what about class names, constants and methods
+    forced gensyms for locals (how?)
+    substitute in special forms and macros (ie. things implemented as procs)
+  resolve reader macro questions
+    user-defined reader macros?
+    move to Reader?
+    reduce chars included in Label, to free up stuff for reader macros?
+    multi-char reader macros?
+
+standard library to write in rst
+  macros for defining classes, modules & methods
+  thread macro (or similar)
+  doto macro?
+  basic comparison/arithmetic functions (so you don't have to do (1 :+ (1 :+ 1)))
+  for comprehensions
+  loop/recur?
+  
+standard library to write either in rst or rb
+  modules to define head behaviour
+    Chainable (default for object)
+    Callable (default for proc, method and lambda)
+  namespacing
+    what is namespaced?
+      env, context, macros?
+    namespaced monkey-patching?
+  convenience stuf like docs in meta-data
+
+possible extensions
+  char literals
+  1 space indent for [ and {
+  set literals
+
+toolchain
+  testing framework in rst
+  vim syntax file
+  vim indentation file
+  vim repl integration
+    when cursor is on a given %, execute cmd sends only that node
+
 # HANDLE READER ERRORS MORE GRACEFULLY... currently an indent error requires a repl restart
+#- improve error reporting... things should never go wrong silently.
+  #- when the input is syntactically invalid (eg. unmatching []{}() chars)
+  #- indentation error
+  #- show short stack trace
+#
 #
 # load standard library in rasta on boot
 #
@@ -25,65 +67,9 @@
 #     you can import/refer namespaces into another namespace, 
 #     or you can associate namespaces with a class, so they are accessible from inside the classes context
 
-- can have objects in @head to __apply as message chains (like ioke)
-
-- use modules to mix in __apply behaviours (eg. Chainable, Callable, Fetchable (for obj[...]))
-
-FIND A WAY TO IMPLEMENT SCOPED MONKEY PATCHING... That way you can redefine a type's call method, without having to lose the method sending aspect throughout your code base
-
-- char literals
-
-- add splats
+# FIND A WAY TO IMPLEMENT SCOPED MONKEY PATCHING... That way you can redefine a type's call method, without having to lose the method sending aspect throughout your code base
 
 # make it impossible to add reader macros for two reasons:
 #   the usefulness is limited since they can only be a single character long at the moment and almost all of the characters are in use
 #   same arguments as with clojure... it'd make the code almost unreadable to a new person
-
-- improve error reporting... things should never go wrong silently.
-  - when the input is syntactically invalid (eg. unmatching []{}() chars)
-  - indentation error
-  - show short stack trace
-
-- embed repl in vim
-  - syntax highlighting
-  - auto-indent
-  - when cursor is on a given %, execute cmd sends only that node
-
-let and loop/recur for local vars
-(.. obj (method args) (method args))
-
-add better support for sets?
-  Set literal #{a s d f}
-  Set#lispeval should return a proc that acts as a predicate
-
-documentation within the language?
-  meta-data?
-
-to define a method on an object
-(in obj ; instance-eval
-  (defn method [a b]...
-on a class
-(in Array
-  (defn ...
-
-; where defn is defined as
-defn = proc do |obj, method, fn|
-  obj.define_method(method, fn)
-end
-
-need to add Object#define_method
-
-when we want to execute a closure (ie. a special form/macro) in a specific context, we can pass receiver as the first arg to the proc, then the "in" special form does this...
-
-in = proc do |obj, my_proc|
-  obj.instance_eval{ my_proc.call(self)} can here, self refers to obj, since it's in an instance_eval
-end
-
-then when eval-ing normally (ie. in the root context) we pass the env in as self... that way, we always have full, explicit control over what self refers to in macros and special forms
-
-macro hygeine?
-  namespacing for everything stored in env?
-    what about class names, constants and methods
-  forced gensyms for locals (how?)
-  substitute in special forms and macros (ie. things implemented as procs)
 

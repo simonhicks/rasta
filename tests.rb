@@ -277,6 +277,10 @@ expect_error '
 % do [a b c &]
   % puts a'
 
+# FIXME while
+
+# FIXME for
+
 if __FILE__==$0
   @tests.each(&:call)
   puts "#{@errors.join("\n")}\n\n#{(((@tests.size - @fails).to_f / @tests.size) * 100).to_i}% Passed. #{@fails} tests failed out of #{@tests.size} tests."
