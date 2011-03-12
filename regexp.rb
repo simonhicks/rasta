@@ -7,6 +7,5 @@ class Regexp
   end
   def print_form
     self.inspect
-    #'#"'+ print_mods + source + '"'
   end
 end

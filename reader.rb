@@ -135,17 +135,32 @@ class Reader
       @next_stack_class = SyntaxQuotedTokenStack
       @macros = {
         [:OTHER, "'"] => proc{|| @waiting_macro = proc{|expr| Node.new(Label.new("quote"), expr)}},
+        [:OTHER, "^"] => proc{|| @waiting_macro = proc{|expr| expr.add_meta(:spliced, true)}},
         [:OTHER, "~"] => proc{|| @waiting_macro = proc{|expr| expr}}
       }
     end
 
+    #def perform_splice exprs = []
+      #new_stack = []
+      #exprs.each do |expr|
+        #if expr.get_meta(:spliced)
+          #perform_splice(expr).each do |e|
+            #new_stack << e
+          #end
+        #else
+          #new_stack << expr
+        #end
+      #end
+      #new_stack
+    #end
+
     def to_token
       if @type == Hash
-        Hash[*@exprs]
+        Hash[*(perform_splice(@exprs))]
       elsif @type == Node
-        Node.new(:new, Label.new("Node"), *@exprs)
+        Node.new(:new, Label.new("Node"), *(perform_splice(@exprs)))
       else
-        @exprs
+        perform_splice(@exprs)
       end
     end
 

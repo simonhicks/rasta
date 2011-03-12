@@ -1,5 +1,8 @@
 root_context = self
 DEFAULTS = {
+  "meta" => proc{|obj, key| obj.get_meta(key)},
+  "add-meta!" => proc{|obj, key, value| obj.add_meta(key, value)},
+  "with-meta" => proc{|obj, key, value| new_obj = obj.dup; new_obj.add_meta(key, value)},
   "ruby" => proc{|str| eval(str)},
   "not" => proc{|expr| not(expr)},
   "true" => true,
@@ -42,6 +45,7 @@ FORMS = {
     prc = evaled_params.pop if evaled_params.last.kind_of?(Lambda)
     object.lispeval(env, forms).send(message, *evaled_params, &prc)
   },
+  "stack-trace"=> lambda{|env, forms| puts $@},
   "exit" => lambda{|env, forms| exit}
 }
 
@@ -78,13 +82,14 @@ class Interpreter
     print "> "
     loop do
       text = ""
-      until (line = gets.chomp).empty?
+      until (line = gets) =~ /\A\s+\Z/
         print "> "
         text << line
       end
       begin
         puts "=> #{self.eval(text).print_form}"
       rescue Exception => e
+        raise e if e.is_a? SystemExit
         puts "ERROR: #{e}"
       end
       print "> "

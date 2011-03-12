@@ -12,5 +12,15 @@ class Object
   def print_form
     to_s
   end
+  def get_meta key = nil
+    meta = self.instance_variable_get("@__meta")
+    key && meta && meta[key] or meta
+  end
+  def add_meta key, value
+    meta = (get_meta || {}).dup
+    meta[key] = value
+    self.instance_variable_set "@__meta", meta
+    self
+  end
 end
 

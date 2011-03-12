@@ -1,13 +1,12 @@
-# Syntax quote/unquote is working but untested
-#
-#
-#     
-#     
 ## unifying the reader
+#
+# HANDLE READER ERRORS MORE GRACEFULLY... currently an indent error requires a repl restart
+#
 # move reader macro list from token-stack to the reader 
 #   reader can intercept reader macros dynamically, so they don't get picked up as symbols
 #   pass the reader macro to the Stack with the token.
-# possibly reduce thenumber of characters allowable in Labels
+# possibly reduce the number of characters allowable in Labels (\w, -, +, !, <, >, ., *, &, |, /)
+#
 # add a reader-macro stage that allows a token to modify the next form
 #   can acheive most of this by allowing reader macros to substitute a new TokenStack class for the nested form
 #   syntax-quote/unquote/unquote-splice will need to be fairly complex...
@@ -18,6 +17,7 @@
 #       ~ reader macro of the nested token_stack is then changed to proc{|expr| Node.new(Label.new("unquote"), expr)}
 #       # reader macro of the nested token_stack is then changed to proc{|expr| Node.new(Label.new("unquote-splice"), expr)}
 #     SyntaxQuoteNode handles the unquote/unquote-splice forms
+#
 # make it impossible to add reader macros for two reasons:
 #   the usefulness is limited since they can only be a single character long at the moment and almost all of the characters are in use
 #   same arguments as with clojure... it'd make the code almost unreadable to a new person
@@ -34,6 +34,10 @@
 # add a namespace property to Labels and qualify them when expanding macros
 
 # use @ for namespacing ?
+#   namespacing should be as flexible as everything else. Programmer should have control to use it any way he likes...
+#     name spaces can be organised according to class
+#     you can import/refer namespaces into another namespace, 
+#     or you can associate namespaces with a class, so they are accessible from inside the classes context
 
 - can have objects in @head to __apply as message chains (like ioke)
 

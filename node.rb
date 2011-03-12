@@ -12,6 +12,8 @@ class Node
     "% "+ @head.print_form + contents.map{|c| "\n#{c.print_form}".gsub("\n", "\n  ")}.join
   end
   def == other_node
-    other_node.class == self.class && other_node.head == self.head && other_node.contents == self.contents
+    other_node.class == self.class && 
+    other_node.head == self.head && 
+    other_node.contents == self.contents
   end
 end

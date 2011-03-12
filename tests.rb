@@ -208,6 +208,24 @@ nil
 ; this should be discarded
 '
 
+# meta-data
+expect({:meta_data => "is awesome!"}, '
+% def foo "Foo"
+% add-meta! foo :meta_data "is awesome!"
+% meta foo')
+expect("This is a test", '
+% def bar "Bar"
+% add-meta! bar :test "This is a test"
+% meta bar :test')
+expect([:unchanged, :changed], '
+% def spam "Spam"
+% add-meta! spam :test :unchanged
+% def eggs 
+  % with-meta spam :test :changed
+% [spam eggs] :map
+  % do [a]
+    % meta a :test')
+
 # FIXME add unquote splicing
 # reader macros 
 expect Label.new("foo"), "'foo"
@@ -215,6 +233,12 @@ expect Node.new(Label.new("puts"), 'hello', ' ', 'world'), '
 % let [a "hello" b "world"]
   `% puts ~a " " ~b
 '
+expect "hello world", '
+% eval
+  %let [a "hello" b " world"]
+    `% def message 
+      % :+ ~a ~b
+message'
 
 # executing ruby strings
 expect "it worked", '% ruby "%w(it worked).join(\" \")"'
