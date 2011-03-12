@@ -7,18 +7,18 @@
 ## unifying the reader
 #
 # HANDLE READER ERRORS MORE GRACEFULLY... currently an indent error requires a repl restart
-
+#
 # load standard library in rasta on boot
-
+#
 ## Using rasta from ruby
 # find a way to load stuff written in rasta into ruby
 # this requires a method that imports ruby and rasta equivalently
-
+#
 ## SOLVING SYMBOL CAPTURE
 # make it imposible to use define outside the top scope
 # check for un-resolvable Labels before adding a form to defs
 # add a namespace property to Labels and qualify them when expanding macros
-
+#
 # use @ for namespacing ?
 #   namespacing should be as flexible as everything else. Programmer should have control to use it any way he likes...
 #     name spaces can be organised according to class

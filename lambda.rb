@@ -9,7 +9,6 @@ class Lambda
   end
 
   def call(*args)
-    #raise "Expected #{@params.size} arguments but got #{args}" unless args.size == @params.size
     newenv = Env.new(@env)
     newforms = Env.new(@forms)
     b = bindings(@params, args)
