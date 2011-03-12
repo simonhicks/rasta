@@ -16,6 +16,6 @@ class Lambda
     proc{|*args| self.call(*args)}
   end
   def print_form
-    Node.new(Label.new("do"), @params, *@code[0]).print_form # we access the 0th element because code is an array inside an array
+    Node.new(Label.new("do"), @params, *@code[0]).print_form # we access the 0th element because @code is an array inside an array
   end
 end

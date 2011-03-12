@@ -226,22 +226,49 @@ expect([:unchanged, :changed], '
   % do [a]
     % meta a :test')
 
-# FIXME add unquote splicing
 # reader macros 
 expect Label.new("foo"), "'foo"
 expect Node.new(Label.new("puts"), 'hello', ' ', 'world'), '
 % let [a "hello" b "world"]
-  `% puts ~a " " ~b
-'
+  `% puts ~a " " ~b'
 expect "hello world", '
 % eval
   %let [a "hello" b " world"]
     `% def message 
       % :+ ~a ~b
 message'
+expect "hello world", '
+% eval
+  % let [a ["hello" " world"]]
+    `% :<< ^a'
+
+# defining methods
+# without helpers
+expect "hello", '
+% Array :__define_instance_method :hello
+  % do []
+    "hello"
+% def o []
+% o :hello'
+expect_error '
+% Array :__define_instance_method :hello
+  % do []
+    "hello"
+% Array :hello'
+expect "goodbye", '
+% Array :__define_class_method :goodbye
+  % do [] "goodbye"
+% Array :goodbye'
 
 # executing ruby strings
 expect "it worked", '% ruby "%w(it worked).join(\" \")"'
+
+##variable arity blocks
+#expect %w(1 12 123 1234), '
+#% def foo
+  #% do [& letters]
+    #% letters :join
+#[(foo 1) (foo 1 2) (foo 1 2 3) (foo 1 2 3 4)]'
 
 if __FILE__==$0
   @tests.each(&:call)

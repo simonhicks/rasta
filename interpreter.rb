@@ -13,6 +13,7 @@ DEFAULTS = {
 
 FORMS = {
   "quote" => lambda {|env, forms, exp| exp },
+  "splice" => lambda {|env, forms, exp| exp.lispeval(env, forms).add_meta(:spliced, true)},
   "def" => lambda {|env, forms, sym, value| env.define(sym, value.lispeval(env, forms)); sym},
   "set!" => lambda {|env, forms, sym, value| env.set(sym, value.lispeval(env, forms))},
   "if" => lambda {|env, forms, cond, xthen, xelse| 

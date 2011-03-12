@@ -1,26 +1,16 @@
+# TOP PRIORITIES:
+#
+# - splats
+#
+# Sugar required:
+# 
+# helper macro for defining methods
+# helper macro for defining classes
+# helper macro for defining modules
+#
 ## unifying the reader
 #
 # HANDLE READER ERRORS MORE GRACEFULLY... currently an indent error requires a repl restart
-#
-# move reader macro list from token-stack to the reader 
-#   reader can intercept reader macros dynamically, so they don't get picked up as symbols
-#   pass the reader macro to the Stack with the token.
-# possibly reduce the number of characters allowable in Labels (\w, -, +, !, <, >, ., *, &, |, /)
-#
-# add a reader-macro stage that allows a token to modify the next form
-#   can acheive most of this by allowing reader macros to substitute a new TokenStack class for the nested form
-#   syntax-quote/unquote/unquote-splice will need to be fairly complex...
-#     unquote/unquote-splice
-#       both simply raise errors saying "you can't use these outside syntax-quoting"
-#     syntax-quote macro `
-#       causes the next node to be a SyntaxQuoteNode (subclass of node)
-#       ~ reader macro of the nested token_stack is then changed to proc{|expr| Node.new(Label.new("unquote"), expr)}
-#       # reader macro of the nested token_stack is then changed to proc{|expr| Node.new(Label.new("unquote-splice"), expr)}
-#     SyntaxQuoteNode handles the unquote/unquote-splice forms
-#
-# make it impossible to add reader macros for two reasons:
-#   the usefulness is limited since they can only be a single character long at the moment and almost all of the characters are in use
-#   same arguments as with clojure... it'd make the code almost unreadable to a new person
 
 # load standard library in rasta on boot
 
@@ -41,7 +31,7 @@
 
 - can have objects in @head to __apply as message chains (like ioke)
 
-- use modules to mix in __apply behaviours (eg. Chainable...) 
+- use modules to mix in __apply behaviours (eg. Chainable, Callable, Fetchable (for obj[...]))
 
 FIND A WAY TO IMPLEMENT SCOPED MONKEY PATCHING... That way you can redefine a type's call method, without having to lose the method sending aspect throughout your code base
 
@@ -49,10 +39,13 @@ FIND A WAY TO IMPLEMENT SCOPED MONKEY PATCHING... That way you can redefine a ty
 
 - add splats
 
-- class special form
+# make it impossible to add reader macros for two reasons:
+#   the usefulness is limited since they can only be a single character long at the moment and almost all of the characters are in use
+#   same arguments as with clojure... it'd make the code almost unreadable to a new person
 
 - improve error reporting... things should never go wrong silently.
   - when the input is syntactically invalid (eg. unmatching []{}() chars)
+  - indentation error
   - show short stack trace
 
 - embed repl in vim
