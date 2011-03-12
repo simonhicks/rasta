@@ -156,13 +156,22 @@ class Reader
 
     def to_token
       if @type == Hash
-        Hash[*(perform_splice(@exprs))]
+        Hash[*@exprs]
       elsif @type == Node
-        Node.new(:new, Label.new("Node"), *(perform_splice(@exprs)))
+        Node.new(:new, Label.new("Node"), *@exprs)
       else
-        perform_splice(@exprs)
+        @exprs
       end
     end
+    #def to_token
+      #if @type == Hash
+        #Hash[*(perform_splice(@exprs))]
+      #elsif @type == Node
+        #Node.new(:new, Label.new("Node"), *(perform_splice(@exprs)))
+      #else
+        #perform_splice(@exprs)
+      #end
+    #end
 
     def reset_nested
       @nested = nil
