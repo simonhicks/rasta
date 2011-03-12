@@ -144,7 +144,7 @@ class Reader
       if @type == Hash
         Hash[*@exprs]
       elsif @type == Node
-        Node.new(:new, Label.new("Node"), *@exprs)
+        Node.new(Label.new("Node"), :new, *@exprs)
       else
         @exprs
       end

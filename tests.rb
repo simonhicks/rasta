@@ -49,24 +49,23 @@ expect 0..10, "0..10"
 expect 0...10, "0...10"
 
 # message passing
-expect "12345", "% :join [1 2 3 4 5]"
-expect Object, "(:class (:new Object))"
-expect Object, "(:class (:new Object))"
+expect "12345", "% [1 2 3 4 5] :join"
+expect Object, "((Object :new) :class)"
 
 # basic arithmetic
-expect 3, "(:+ 1 2)"
-expect 2, "% :* 1 2"
+expect 3, "(1 :+ 2)"
+expect 2, "% 1 :* 2"
 expect -1, "
-% :- 
-  1 
+% 1 
+  :-
   2"
 expect 0, "% 1 :/ 2"
 expect 0.5, "% 1.0 :/ 2"
 # nesting exprs
 expect 5,
 "
-% :+
-  % 3 :- 1
+% % 3 :- 1
+  :+
   % 6 :/ (1 :* 2)
 "
 
@@ -77,14 +76,14 @@ a"
 expect 10, "
 % def b 2
 % def c 5
-% :* b c
+% b :* c
 "
 
 # letting variables
 expect 10,"
 % let
   [q 5]
-  % :+ q q
+  % q :+ q
 "
 expect 6,"
 % let
@@ -95,29 +94,28 @@ expect "hello world","
 % let
   [hello \"hello\"
   ,world \"world\"]
-  % :join [hello world] \" \"
+  % [hello world] :join \" \"
 "
 
 # defining blocks
 expect 4, "
 % def double
   % do [x]
-    % :* 2 x
+    % 2 :* x
 
-% double 2
-"
+% double 2"
+
 # passing blocks to methods
 expect "ABCDEF", "
-% :join
-  % :map (\"a\"..\"f\" :to_a)
+% % (\"a\"..\"f\" :to_a) :map
     % do [letter] 
       % letter :upcase
-"
+  :join"
+
 expect "ABCDEF", "
-% :join
-  % (\"a\"..\"f\" :to_a) :map
+% % (\"a\"..\"f\" :to_a) :map
     % do [l] (l :upcase)
-"
+  :join"
 
 # defining macros
 expect :unchanged, "
@@ -129,20 +127,18 @@ expect :unchanged, "
 
 % def macro-test :unchanged
 
-% my-unless (:== 1 1)
+% my-unless (1 :== 1)
   % set! macro-test :changed
   nil
 
-macro-test
-"
+macro-test"
 
 # accessing self
 expect self, "self"
 # changing context via the "in" macro
 expect Fixnum, "
 % in 1
-  % :class self
-"
+  % self :class"
 
 # variable scope
 expect "asdf", "
@@ -154,8 +150,7 @@ expect "asdf", "
 expect 5, "
 % def a 5
 
-% in (:new Object) a
-"
+% in (Object :new) a"
 
 # quote/eval
 expect Label.new("bar"), "(quote bar)"
@@ -205,6 +200,9 @@ another-require-test
 # comments
 expect nil, '
 nil
+; this should be discarded'
+expect 5, '
+5
 ; this should be discarded
 '
 
@@ -235,12 +233,15 @@ expect "hello world", '
 % eval
   %let [a "hello" b " world"]
     `% def message 
-      % :+ ~a ~b
+      % ~a :+ ~b
 message'
 expect "hello world", '
+% def str
+  % do [s1 s2]
+    % s1 :<< s2
 % eval
   % let [a ["hello" " world"]]
-    `% :<< ^a'
+    `% str ^a'
 
 # defining methods
 # without helpers
@@ -263,15 +264,21 @@ expect "goodbye", '
 # executing ruby strings
 expect "it worked", '% ruby "%w(it worked).join(\" \")"'
 
-##variable arity blocks
-#expect %w(1 12 123 1234), '
-#% def foo
-  #% do [& letters]
-    #% letters :join
-#[(foo 1) (foo 1 2) (foo 1 2 3) (foo 1 2 3 4)]'
+#variable arity blocks
+expect %w(1 12 123 1234), '
+% def foo
+  % do [& letters]
+    % letters :join 
+[(foo 1) (foo 1 2) (foo 1 2 3) (foo 1 2 3 4)]'
+expect_error '
+% do [a & b c]
+  % puts a'
+expect_error '
+% do [a b c &]
+  % puts a'
 
 if __FILE__==$0
   @tests.each(&:call)
-  puts "#{(((@tests.size - @fails).to_f / @tests.size) * 100).to_i}% Passed. #{@fails} tests failed out of #{@tests.size} tests.#{@errors.join("\n")}"
+  puts "#{@errors.join("\n")}\n\n#{(((@tests.size - @fails).to_f / @tests.size) * 100).to_i}% Passed. #{@fails} tests failed out of #{@tests.size} tests."
 end
 

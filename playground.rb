@@ -1,51 +1,47 @@
-class SyntaxQuotedTokenStack < TokenStack
-  def initialize type = nil
-    @exprs = []
-    @nested = @reader_macro = nil
-    @closer, @type = TYPES[type]
-    @next_stack_class = SyntaxQuotedTokenStack
-    @macros = {
-      #[:OTHER, "'"] => proc{|expr| Node.new(Label.new("quote"), expr)},
-      [:OTHER, "'"] => proc {|| @waiting_macros << proc{|expr| Node.new(Label.new("quote"), expr)}},
-      [:OTHER, "~"] => proc {|| @waiting_macros << proc{|expr| expr}}
-    }
-  end
-
-  def to_token
-    if @type == Hash
-      Hash[*@exprs]
-    elsif @type == Node
-      Node.new(:new, Label.new("Node"), *@exprs) # this should handle the 
-    else
-      @exprs
-    end
-  end
-
-  def nest_token token
-    @nested = @next_stack_class.new(token)
-  end
+#class Lambda 
+  #def initialize(env, forms, params, *code)
+    #@env, @forms, @params, @code = env, forms, params, code
+  #end
   
-  # add a token to the expression stack, applying the waiting reader macro if there is one
-  def add_to_exprs token
-    if @reader_macro
-      @exprs << @reader_macro.call(token)
-      @reader_macro = nil
-    elsif [Node, Array, Hash].include?(token.class)
-      @exprs << token # if it's one of these, then it's already come from a SyntaxQuotedTokenStack, so quoting is already taken care of
-    else
-      @exprs << Node.new(Label.new("quote"), token)
-    end
-  end
-end
+  #def call(*args)
+    #raise "Expected #{@params.size} arguments but got #{args}" unless args.size == @params.size
+    #newenv = Env.new(@env)
+    #newforms = Env.new(@forms)
+    #@params.zip(args).each do |sym, value|
+      #newenv.define(sym, value)
+    #end
+    #results = @code.map{|c| c.lispeval(newenv, newforms)}
+    #results[-1]
+  #end
 
-def l str
-  Label.new(str)
-end
-def t str
-  [:OTHER, str]
-end
-def convert *tokens
-  stack = SyntaxQuotedTokenStack.new
-  tokens.each{|t| stack << t}
-  stack.to_token[-1]
-end
+  #def to_proc
+    #proc{|*args| self.call(*args)}
+  #end
+
+  #def print_form
+    #Node.new(Label.new("do"), @params, *@code[0]).print_form # we access the 0th element because @code is an array inside an array
+  #end
+#end
+
+@params = %w(a s d)
+  def bindings params, args
+    original = params.dup 
+    rest = nil
+    pairs = []
+    until params.empty?
+      p = params.shift
+      if rest
+        pairs << [p, args] # if we've had the "&" then we dump the rest into the final param
+        break
+      elsif p == "&"
+        rest = true # otherwise, if this is the "&" then we ignore it for now and mark for the next iteration
+      else
+        pairs << [p, args.shift]
+      end
+    end
+    raise "Invalid parameter declaration #{original}" if not params.empty?
+    pairs
+  end
+b = bindings(@params, [1,2,3,4,5,6,7,8,9])
+puts b.map{|k,v| [k.class, v]}
+
