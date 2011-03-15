@@ -16,6 +16,7 @@ important stuff that needs to be done sooner or later...
 standard library to write in rst
   macros for defining classes, modules & methods
   thread macro (or similar)
+    % -> (initial form) (threaded form |) (where | represents) (| the position of the) (result | from the last) (form ^|)
   doto macro?
   basic comparison/arithmetic functions (so you don't have to do (1 :+ (1 :+ 1)))
   for comprehensions
